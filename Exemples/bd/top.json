@@ -1,0 +1,40 @@
+{
+  "dare": [
+    "Dis des mots doux à [Joueur].",
+    "Fais une imitation d'un membre du groupe.",
+    "Échange un de tes vêtements avec [Joueur]",
+    "Dis une chose honnête sur les deux personnes qui t'entourent.",
+    "Crie ta réf la plus gênante que tu connaisse.",
+    "Fais le Floss puis baisse les masques et enchaîne sur Take the L.",
+    "Fais un mélange de toutes les boissons que tu as.",
+    "Gobe un œuf cru.",
+    "Laisse [Joueur] te mettre sa meilleure fessée",
+    "Assieds-toi sur les genoux d'une personne qui joue au jeu jusqu'au prochain tour."
+  ],
+  "truth": [
+    "Quelle est la personne en qui tu as le plus confiance entre [Joueur1] et [Joueur2] ?",
+    "Quelle partie du corps de [Joueur] voudrais-tu voler ?",
+    "Raconte ton dernier rateau.",
+    "Tu préfères flirter avec [Joueur1] ou [Joueur2] ?",
+    "Pourquoi as-tu choisi ton/ta copine ?",
+    "Quel est le pire défaut de [Joueur] ?",
+    "Quelle partie du corps tu préfères chez [Joueur] ?",
+    "Quelle partie de ton corps tu hais le plus ?",
+    "Est-ce que tu serais capable de dormir dans le même lit que la sœur ou la mère de [Joueur] ?",
+    "[Joueur1] et [Joueur2] sont tout seuls dans une pièce que penses-tu qu'il se passera ?",
+    "Dis la chose que tu détestes le plus de [Joueur]",
+    "Est-ce que tu as déjà volé quelque chose à [Joueur] ?",
+    "De quoi es-tu le plus fier / fière ?",
+    "Si tu devais changer de prénom, comment t’appellerais-tu ?",
+    "Quelle est la chose la plus dégoûtante que tu aies jamais faite ?",
+    "Quelle est la chose la plus cruelle que tu aies faite ou dite à quelqu’un ?",
+    "Quand as-tu menti pour la dernière fois ? À qui ?",
+    "De ton groupe d’amis, à quelle personne fais-tu le moins confiance ?",
+    "Quand as-tu eu envie de frapper quelqu’un pour la dernière fois ?"
+  ],
+  "hotDare": [
+    "Touche le zizi du chien",
+    "Quelle est la chose la plus bizarre que tu aies faite dans une salle de bain ?"
+  ],
+  "hotTruth": []
+}
