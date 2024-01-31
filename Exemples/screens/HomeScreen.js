@@ -10,7 +10,7 @@ const HomeScreen = ({ navigation }) => {
     navigation.navigate('TestScreen');
   };
   const goToPlayer = () => {
-    navigation.navigate('PlayerScreen');
+    navigation.navigate('PlayersScreen');
   };
 
 

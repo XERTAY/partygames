@@ -1,8 +1,8 @@
-// TestScreen.js
+// PlayersScreen.js
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView } from 'react-native';
 
-const TestScreen = () => {
+const PlayersScreen = () => {
   const [blocks, setBlocks] = useState([{ id: 1, text: '', showMinus: false }]);
   const [players, setPlayers] = useState([]);
 
@@ -106,4 +106,4 @@ const TestScreen = () => {
   );
 };
 
-export default TestScreen;
+export default PlayersScreen;
