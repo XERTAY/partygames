@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { Easing, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
-import tasks from './../bd/top.json'; // Importez directement le fichier JSON
+import tasks from './../databases/top.json'; // Importez directement le fichier JSON
 
 export default function ToD() {
   const [isAnimating, setIsAnimating] = useState(false);

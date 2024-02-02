@@ -1,38 +1,77 @@
 // PlayersScreen.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import Database from './../databases/Database';
 
 const PlayersScreen = () => {
   const [blocks, setBlocks] = useState([{ id: 1, text: '', showMinus: false }]);
   const [players, setPlayers] = useState([]);
+  const [currentPlayerName, setCurrentPlayerName] = useState('');
+
+  useEffect(() => {
+    // Charge la liste des joueurs au montage du composant
+    refreshPlayerList();
+  }, []);
+
+  const refreshPlayerList = () => {
+    // Rafraîchit la liste des joueurs depuis la base de données
+    Database.getAllPlayers(setPlayers);
+  };
+
+  const addPlayerToDatabase = (name) => {
+    // Ajoute un joueur à la base de données
+    Database.addPlayer(name, (insertId) => {
+      console.log(`Nouveau joueur ajouté avec l'ID : ${insertId}`);
+      // Rafraîchit la liste des joueurs après l'ajout
+      refreshPlayerList();
+    });
+  };
+
+  const removePlayerFromDatabase = (id) => {
+    // Supprime un joueur de la base de données
+    Database.removePlayer(id, () => {
+      console.log(`Joueur avec l'ID ${id} supprimé`);
+      // Rafraîchit la liste des joueurs après la suppression
+      refreshPlayerList();
+    });
+  };
+  const removeAllPlayersFromDatabase = () => {
+    // Supprime tous les joueurs de la base de données
+    Database.removeAllPlayers((rowsAffected) => {
+      console.log(`Nombre de joueurs supprimés : ${rowsAffected}`);
+      // Rafraîchit la liste des joueurs après la suppression
+      refreshPlayerList();
+    });
+  };
 
   const handleButtonPress = () => {
-    // Vérifie si le texte du premier bloc est vide ou égal à un des blocs suivants
     const isInvalidText = blocks[0].text === '' || blocks.slice(1).some((b) => b.text === blocks[0].text);
 
     if (isInvalidText) {
       return;
     }
 
-    // Ajoute un nouveau bloc avec le texte du premier bloc
     const newBlock = { id: blocks.length + 1, text: blocks[0].text, showMinus: true };
     setBlocks([...blocks, newBlock]);
 
-    // Réinitialise le texte du premier bloc
+    // Ajoute un nouveau joueur à la base de données
+    addPlayerToDatabase(newBlock.text);
+
     setBlocks((prevBlocks) => [
       { ...prevBlocks[0], text: '' },
-      ...prevBlocks.slice(1), // conserve les blocs existants sauf le premier
+      ...prevBlocks.slice(1),
     ]);
   };
 
   const handleMinusButtonPress = (id) => {
-    // Supprime le bloc correspondant
     const updatedBlocks = blocks.filter((block) => block.id !== id);
     setBlocks(updatedBlocks);
+
+    // Supprime le joueur correspondant de la base de données
+    removePlayerFromDatabase(id);
   };
 
   const handleTextChange = (text, id) => {
-    // Met à jour le texte dans le bloc correspondant
     const updatedBlocks = blocks.map((block) =>
       block.id === id ? { ...block, text } : block
     );
@@ -97,13 +136,27 @@ const PlayersScreen = () => {
       ))}
 
       <TouchableOpacity
-        style={{ backgroundColor: 'blue', padding: 15, borderRadius: 5, alignSelf: 'flex-end', marginTop: 10 }}
-        onPress={handlePrintPress}
-      >
-        <Text style={{ color: 'white' }}>PRINT</Text>
-      </TouchableOpacity>
-    </ScrollView>
-  );
-};
+              style={{ backgroundColor: 'blue', padding: 15, borderRadius: 5, alignSelf: 'flex-end', marginTop: 10 }}
+              onPress={handlePrintPress}
+            >
+              <Text style={{ color: 'white' }}>PRINT</Text>
+            </TouchableOpacity>
+
+            {/* Ajoute un bouton rouge pour supprimer tous les joueurs */}
+            <TouchableOpacity
+              style={{ backgroundColor: 'red', padding: 15, borderRadius: 5, alignSelf: 'flex-end', marginTop: 10 }}
+              onPress={removeAllPlayersFromDatabase}
+            >
+              <Text style={{ color: 'white' }}>REMOVE TOUS LES JOUEURS</Text>
+            </TouchableOpacity>
+
+            {/* Affiche la liste des joueurs tout en bas de la page */}
+            <Text>Liste des joueurs :</Text>
+            {players.map((player) => (
+              <Text key={player.id}>{`${player.id} - ${player.name}`}</Text>
+            ))}
+          </ScrollView>
+        );
+      };
 
 export default PlayersScreen;

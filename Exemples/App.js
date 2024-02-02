@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StatusBar } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -6,10 +6,15 @@ import HomeScreen from './screens/HomeScreen';
 import ToD from './screens/ToD';
 import PlayersScreen from './screens/PlayersScreen';
 import TestScreen from './screens/TestScreen';
+import Database from './databases/Database';
 
 const Stack = createNativeStackNavigator();
 
 const App = () => {
+  useEffect(() => {
+    Database.init();
+  }, []);
+  
   return (
     <NavigationContainer>
       <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
