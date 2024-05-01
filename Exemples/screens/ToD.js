@@ -1,26 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { Easing, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import tasks from './../databases/top.json'; // Importez directement le fichier JSON
+import Database from './../databases/Database';
 
 export default function ToD() {
   const [isAnimating, setIsAnimating] = useState(false);
-  const scaleValue = useSharedValue(1); // Valeur de l'échelle initiale
+  const scaleValue = useSharedValue(1);
 
   const [maChaineDeCaracteres, setMaChaineDeCaracteres] = useState("Placeholder");
+  const [currentPlayer, setCurrentPlayer] = useState({ id: 1, name: 'Test' });
 
   const loadTasksDare = () => {
     const randomDare = getRandomItem(tasks.dare);
     changerValeur(randomDare);
     console.log('Défi au hasard:', randomDare);
-    // Faites quelque chose avec la tâche au hasard, par exemple, l'afficher dans la console
   };
+
   const loadTasksTruth = () => {
     const randomTruth = getRandomItem(tasks.truth);
     changerValeur(randomTruth);
     console.log('Défi au hasard:', randomTruth);
-    // Faites quelque chose avec la tâche au hasard, par exemple, l'afficher dans la console
   };
 
   const getRandomItem = (array) => {
@@ -31,20 +32,18 @@ export default function ToD() {
   const truthButton = () => {
     startAnimation();
     loadTasksTruth();
-  }
+  };
 
   const dareButton = () => {
     startAnimation();
     loadTasksDare();
-  }
+  };
 
   const startAnimation = () => {
     setIsAnimating(true);
 
-    // Animation d'agrandissement avec ease-in
     scaleValue.value = withTiming(1.03, { duration: 300, easing: Easing.inOut(Easing.ease) });
 
-    // Attendre 500 ms (demi-seconde) avant de revenir à la taille d'origine avec ease-out
     setTimeout(() => {
       scaleValue.value = withTiming(1, { duration: 300, easing: Easing.inOut(Easing.ease) });
       setIsAnimating(false);
@@ -52,23 +51,42 @@ export default function ToD() {
   };
 
   const changerValeur = (nouvelleValeur) => {
-    // Utilisez setMaChaineDeCaracteres pour changer la valeur
     setMaChaineDeCaracteres(nouvelleValeur);
   };
 
+  const getNextPlayer = async () => {
+    try {
+      const players = await Database.getAllPlayers();
+      
+      if (players && players.length > 0) {
+        const currentPlayerIndex = players.findIndex(player => player.id === currentPlayer.id);
+        const nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
+        setCurrentPlayer(players[nextPlayerIndex]);
+      } else {
+        console.error('La base de données des joueurs est vide.');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération des joueurs :', error);
+    }
+  };
+
+  useEffect(() => {
+    // Chargez le premier joueur au démarrage
+    getNextPlayer();
+  }, []);
+
   return (
-    
     <View style={styles.container}>
       <LinearGradient
         colors={['#FF69B4', '#8A2BE2', '#0000FF', '#8A2BE2', '#FF69B4']}
         style={styles.background}
       />
       <Text style={styles.overlayText}>Truth or Dare</Text>
-      <Text style={styles.playerText}>Joueur</Text>
+      <Text style={styles.playerText}>{currentPlayer.name}</Text>
 
       <Animated.View
         style={{
-          backgroundColor: 'rgba(255, 105, 180, 0.5)', // Rose avec faible opacité
+          backgroundColor: 'rgba(255, 105, 180, 0.5)',
           padding: 20,
           borderRadius: 10,
           alignItems: 'center',
@@ -80,11 +98,9 @@ export default function ToD() {
       >
         <Text style={styles.text}>{maChaineDeCaracteres}</Text>
       </Animated.View>
-      
+
       <View style={styles.South}>
-
-        <Text style={styles.text}>Joueur suivant : Joueur</Text>
-
+        <Text style={styles.text}>Joueur suivant : {currentPlayer.name}</Text>
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.buttonPurple} onPress={truthButton} disabled={isAnimating}>
             <Text style={styles.buttonText}>Truth</Text>
@@ -93,7 +109,6 @@ export default function ToD() {
             <Text style={styles.buttonText}>Dare</Text>
           </TouchableOpacity>
         </View>
-
       </View>
     </View>
   );

@@ -13,14 +13,16 @@ class Database {
     });
   }
 
-  static getAllPlayers(callback) {
-    db.transaction(tx => {
-      tx.executeSql(
-        'SELECT * FROM players',
-        [],
-        (_, { rows }) => callback(rows._array),
-        (_, error) => console.log('Error fetching players:', error)
-      );
+  static getAllPlayers() {
+    return new Promise((resolve, reject) => {
+      db.transaction(tx => {
+        tx.executeSql(
+          'SELECT * FROM players',
+          [],
+          (_, { rows }) => resolve(rows._array),
+          (_, error) => reject(error)
+        );
+      });
     });
   }
 
