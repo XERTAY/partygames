@@ -1,25 +1,64 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { Easing, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
-import tasks from './../databases/top.json'; // Importez directement le fichier JSON
-import Database from './../databases/Database';
+import Animated, { Easing, useSharedValue, withTiming } from 'react-native-reanimated';
+import tasks from './../databases/top.json';
+import { usePlayers } from './../databases/PlayerContext'; // Importez usePlayers depuis le contexte PlayerContext
 
 export default function ToD() {
+  const { playerList } = usePlayers(); // Utilisez usePlayers pour obtenir la liste des joueurs
   const [isAnimating, setIsAnimating] = useState(false);
   const scaleValue = useSharedValue(1);
-
   const [maChaineDeCaracteres, setMaChaineDeCaracteres] = useState("Placeholder");
-  const [currentPlayer, setCurrentPlayer] = useState({ id: 1, name: 'Test' });
+  const [currentPlayerIndex, setCurrentPlayerIndex] = useState(null);
+  const [nextPlayerIndex, setNextPlayerIndex] = useState(null);
+
+  useEffect(() => {
+    // Générer deux indices aléatoires pour les deux premiers joueurs
+    const randomIndex1 = Math.floor(Math.random() * playerList.length);
+    let randomIndex2;
+    do {
+      randomIndex2 = Math.floor(Math.random() * playerList.length);
+    } while (randomIndex1 === randomIndex2);
+    setCurrentPlayerIndex(randomIndex1);
+    setNextPlayerIndex(randomIndex2);
+  }, [playerList]);
+
+  const getNextPlayerIndex = (currentIndex) => {
+    // Obtenir l'index suivant dans la liste circulaire
+    return (currentIndex + 1) % playerList.length;
+  };
 
   const loadTasksDare = () => {
-    const randomDare = getRandomItem(tasks.dare);
+    let randomIndex1, randomIndex2;
+    do {
+      randomIndex1 = Math.floor(Math.random() * playerList.length);
+    } while (randomIndex1 === currentPlayerIndex);
+    do {
+      randomIndex2 = Math.floor(Math.random() * playerList.length);
+    } while (randomIndex2 === currentPlayerIndex || randomIndex2 === randomIndex1);
+  
+    const playerName1 = playerList[randomIndex1].name;
+    const playerName2 = playerList[randomIndex2].name;
+
+    const randomDare = getRandomItem(tasks.dare).replace('[Joueur1]', playerName1).replace('[Joueur2]', playerName2).replace('[Joueur]', playerName1);
     changerValeur(randomDare);
     console.log('Défi au hasard:', randomDare);
   };
 
   const loadTasksTruth = () => {
-    const randomTruth = getRandomItem(tasks.truth);
+    let randomIndex1, randomIndex2;
+    do {
+      randomIndex1 = Math.floor(Math.random() * playerList.length);
+    } while (randomIndex1 === currentPlayerIndex);
+    do {
+      randomIndex2 = Math.floor(Math.random() * playerList.length);
+    } while (randomIndex2 === currentPlayerIndex || randomIndex2 === randomIndex1);
+  
+    const playerName1 = playerList[randomIndex1].name;
+    const playerName2 = playerList[randomIndex2].name;
+  
+    const randomTruth = getRandomItem(tasks.truth).replace('[Joueur1]', playerName1).replace('[Joueur2]', playerName2).replace('[Joueur]', playerName1);
     changerValeur(randomTruth);
     console.log('Défi au hasard:', randomTruth);
   };
@@ -47,6 +86,8 @@ export default function ToD() {
     setTimeout(() => {
       scaleValue.value = withTiming(1, { duration: 300, easing: Easing.inOut(Easing.ease) });
       setIsAnimating(false);
+      setCurrentPlayerIndex(nextPlayerIndex);
+      setNextPlayerIndex(getNextPlayerIndex(nextPlayerIndex));
     }, 300);
   };
 
@@ -54,26 +95,9 @@ export default function ToD() {
     setMaChaineDeCaracteres(nouvelleValeur);
   };
 
-  const getNextPlayer = async () => {
-    try {
-      const players = await Database.getAllPlayers();
-      
-      if (players && players.length > 0) {
-        const currentPlayerIndex = players.findIndex(player => player.id === currentPlayer.id);
-        const nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
-        setCurrentPlayer(players[nextPlayerIndex]);
-      } else {
-        console.error('La base de données des joueurs est vide.');
-      }
-    } catch (error) {
-      console.error('Erreur lors de la récupération des joueurs :', error);
-    }
-  };
-
-  useEffect(() => {
-    // Chargez le premier joueur au démarrage
-    getNextPlayer();
-  }, []);
+  if (currentPlayerIndex === null || nextPlayerIndex === null) {
+    return null; // Attendez que les joueurs soient initialisés
+  }
 
   return (
     <View style={styles.container}>
@@ -82,7 +106,7 @@ export default function ToD() {
         style={styles.background}
       />
       <Text style={styles.overlayText}>Truth or Dare</Text>
-      <Text style={styles.playerText}>{currentPlayer.name}</Text>
+      <Text style={styles.playerText}>{playerList[currentPlayerIndex].name}</Text>
 
       <Animated.View
         style={{
@@ -100,7 +124,7 @@ export default function ToD() {
       </Animated.View>
 
       <View style={styles.South}>
-        <Text style={styles.text}>Joueur suivant : {currentPlayer.name}</Text>
+        <Text style={styles.text}>Joueur suivant : {playerList[nextPlayerIndex].name}</Text>
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.buttonPurple} onPress={truthButton} disabled={isAnimating}>
             <Text style={styles.buttonText}>Truth</Text>

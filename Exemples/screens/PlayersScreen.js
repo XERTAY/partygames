@@ -1,46 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, TextInput, TouchableOpacity, ScrollView, Text, StyleSheet, Alert } from 'react-native';
-import Database from './../databases/Database'; // Make sure to import your Database.js file correctly
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const AddPlayerScreen = () => {
-  const [playerList, setPlayerList] = useState([{ id: 1, name: '' }]);
+import { usePlayers } from './../databases/PlayerContext'; // Importez usePlayers depuis le contexte PlayerContext
+
+const PlayerScreen = () => {
+  const { playerList, addPlayer, removePlayer, setPlayerList } = usePlayers();
   const [addPlayerName, setAddPlayerName] = useState('');
 
-  const addPlayer = () => {
-    const newPlayerList = [...playerList, { id: Date.now(), name: addPlayerName }];
-    setPlayerList(newPlayerList);
-    setAddPlayerName('');
-  };
-
-  const removePlayer = async (id, retries = 3) => {
-    try {
-      await Database.init(); // Initialize the database if not already done
-
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Introduce a delay
-
-      await new Promise(async (resolve, reject) => {
-        try {
-          await Database.removePlayer(id, (rowsAffected) => {
-            console.log(`Player removed with ID ${id}, Rows affected: ${rowsAffected}`);
-            resolve();
-          }, reject);
-        } catch (error) {
-          console.error(`Error removing player with ID ${id}:`, error);
-          if (retries > 0) {
-            console.log(`Retrying... (${retries} retries left)`);
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            await removePlayer(id, retries - 1);
-          } else {
-            reject(error);
-          }
+  useEffect(() => {
+    const loadPlayerList = async () => {
+      try {
+        const storedPlayers = await AsyncStorage.getItem('playerList');
+        if (storedPlayers !== null) {
+          setPlayerList(JSON.parse(storedPlayers));
         }
-      });
+      } catch (error) {
+        console.error('Erreur lors du chargement des joueurs :', error);
+      }
+    };
 
-      console.log(`Player with ID ${id} removed successfully`);
-    } catch (error) {
-      console.error(`Error removing player with ID ${id}:`, error);
-    }
-  };
+    loadPlayerList();
+  }, []);
 
   const handleInputChange = (id, name) => {
     const newPlayerList = playerList.map((player) =>
@@ -51,53 +32,16 @@ const AddPlayerScreen = () => {
 
   const handleGoButtonPress = async () => {
     try {
-      await Database.init(); // Initialize the database if not already done
+      // Sauvegarde de la liste des joueurs dans AsyncStorage
+      await AsyncStorage.setItem('playerList', JSON.stringify(playerList));
+      console.log('Liste des joueurs sauvegardée avec succès.');
 
-      for (const player of playerList) {
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // Introduce a delay
-
-        if (player.name) {
-          await new Promise((resolve, reject) => {
-            Database.addPlayer(player.name, (insertId) => {
-              console.log(`Player added with ID: ${insertId}`);
-              resolve();
-            }, reject);
-          });
-        }
-      }
-
-      Alert.alert('Registration successful', 'Players have been added to the database.');
+      // Affichage de la liste des joueurs dans la console
+      console.log('Liste des joueurs :', playerList);
     } catch (error) {
-      console.error('Error adding players:', error);
-      Alert.alert('Error', 'An error occurred while adding players.');
+      console.error('Erreur lors de la sauvegarde de la liste des joueurs :', error);
     }
   };
-
-  useEffect(() => {
-    const resetDatabase = async () => {
-      try {
-        await Database.init(); // Initialize the database if not already done
-
-        for (const player of playerList) {
-          await new Promise((resolve) => setTimeout(resolve, 1000)); // Introduce a delay
-
-          await new Promise((resolve, reject) => {
-            Database.removePlayer(player.id, (rowsAffected) => {
-              console.log(`Player removed with ID ${player.id}, Rows affected: ${rowsAffected}`);
-              resolve();
-            }, reject);
-          });
-        }
-
-        console.log('All players removed successfully');
-      } catch (error) {
-        console.error('Error removing all players:', error);
-      }
-    };
-
-    resetDatabase();
-  }, []);
-
 
   return (
     <View style={styles.container}>
@@ -108,12 +52,12 @@ const AddPlayerScreen = () => {
           value={addPlayerName}
           onChangeText={(text) => setAddPlayerName(text)}
         />
-        <TouchableOpacity onPress={addPlayer} style={styles.addButton}>
+        <TouchableOpacity onPress={() => addPlayer(addPlayerName)} style={styles.addButton}>
           <Text style={styles.buttonText}>+</Text>
         </TouchableOpacity>
       </View>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        {playerList.slice(1).map((player) => (
+        {playerList.map((player) => (
           <View key={player.id} style={styles.playerContainer}>
             <View style={styles.playerInputContainer}>
               <TextInput
@@ -189,4 +133,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddPlayerScreen;
+export default PlayerScreen;
